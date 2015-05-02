@@ -52,7 +52,6 @@ public class GdgWatchFace extends CanvasWatchFaceService {
     }
 
     private class Engine extends CanvasWatchFaceService.Engine {
-        static final int MSG_UPDATE_TIME = 0;
 
         Paint mBackgroundPaint;
         Paint mHandPaint;
@@ -65,16 +64,14 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         final Handler mUpdateTimeHandler = new Handler() {
             @Override
             public void handleMessage(Message message) {
-                switch (message.what) {
-                    case MSG_UPDATE_TIME:
-                        invalidate();
-                        if (shouldTimerBeRunning()) {
-                            long timeMs = System.currentTimeMillis();
-                            long delayMs = INTERACTIVE_UPDATE_RATE_MS
-                                    - (timeMs % INTERACTIVE_UPDATE_RATE_MS);
-                            mUpdateTimeHandler.sendEmptyMessageDelayed(MSG_UPDATE_TIME, delayMs);
-                        }
-                        break;
+                if (R.id.message_update_time == message.what) {
+                    invalidate();
+                    if (shouldTimerBeRunning()) {
+                        long timeMs = System.currentTimeMillis();
+                        long delayMs = INTERACTIVE_UPDATE_RATE_MS
+                                - (timeMs % INTERACTIVE_UPDATE_RATE_MS);
+                        mUpdateTimeHandler.sendEmptyMessageDelayed(R.id.message_update_time, delayMs);
+                    }
                 }
             }
         };
@@ -120,7 +117,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
 
         @Override
         public void onDestroy() {
-            mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
+            mUpdateTimeHandler.removeMessages(R.id.message_update_time);
             super.onDestroy();
         }
 
@@ -233,9 +230,9 @@ public class GdgWatchFace extends CanvasWatchFaceService {
          * or stops it if it shouldn't be running but currently is.
          */
         private void updateTimer() {
-            mUpdateTimeHandler.removeMessages(MSG_UPDATE_TIME);
+            mUpdateTimeHandler.removeMessages(R.id.message_update_time);
             if (shouldTimerBeRunning()) {
-                mUpdateTimeHandler.sendEmptyMessage(MSG_UPDATE_TIME);
+                mUpdateTimeHandler.sendEmptyMessage(R.id.message_update_time);
             }
         }
 
