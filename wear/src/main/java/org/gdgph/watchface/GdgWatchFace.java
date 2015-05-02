@@ -21,6 +21,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Rect;
@@ -55,6 +57,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
 
         Paint mBackgroundPaint;
         Paint mHandPaint;
+        Bitmap mBackgroundBitmap;
         boolean mAmbient;
         Time mTime;
 
@@ -106,6 +109,8 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(resources.getColor(R.color.analog_background));
 
+            mBackgroundBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.gdg_background);
+
             mHandPaint = new Paint();
             mHandPaint.setColor(resources.getColor(R.color.analog_hands));
             mHandPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
@@ -150,6 +155,17 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         }
 
         @Override
+        public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+            super.onSurfaceChanged(holder, format, width, height);
+
+            float scale = ((float) width / (float) mBackgroundBitmap.getWidth());
+
+            mBackgroundBitmap = Bitmap.createScaledBitmap(mBackgroundBitmap,
+                    (int) (mBackgroundBitmap.getWidth() * scale),
+                    (int) (mBackgroundBitmap.getHeight() * scale), true);
+        }
+
+        @Override
         public void onDraw(Canvas canvas, Rect bounds) {
             mTime.setToNow();
 
@@ -157,7 +173,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             int height = bounds.height();
 
             // Draw the background.
-            canvas.drawRect(0, 0, canvas.getWidth(), canvas.getHeight(), mBackgroundPaint);
+            canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
 
             // Find the center. Ignore the window insets so that, on round watches with a
             // "chin", the watch face is centered on the entire screen, not just the usable
