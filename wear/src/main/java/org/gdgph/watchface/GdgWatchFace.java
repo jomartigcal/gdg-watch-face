@@ -25,6 +25,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -59,6 +61,8 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         private static final float HAND_END_CAP_RADIUS = 4f;
         private static final float SHADOW_RADIUS = 6f;
 
+        private Rect mCardBounds = new Rect();
+
         private float mHourHandLength;
         private float mMinuteHandLength;
         private float mSecondHandLength;
@@ -71,6 +75,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         Paint mBackgroundPaint;
         Paint mHandPaint;
         Bitmap mBackgroundBitmap;
+        Bitmap mGrayBackgroundBitmap;
         boolean mAmbient;
         Time mTime;
 
@@ -106,6 +111,8 @@ public class GdgWatchFace extends CanvasWatchFaceService {
          * disable anti-aliasing in ambient mode.
          */
         boolean mLowBitAmbient;
+
+        boolean mBurnInProtection;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -145,6 +152,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         public void onPropertiesChanged(Bundle properties) {
             super.onPropertiesChanged(properties);
             mLowBitAmbient = properties.getBoolean(PROPERTY_LOW_BIT_AMBIENT, false);
+            mBurnInProtection = properties.getBoolean(PROPERTY_BURN_IN_PROTECTION, false);
         }
 
         @Override
@@ -158,7 +166,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             super.onAmbientModeChanged(inAmbientMode);
             if (mAmbient != inAmbientMode) {
                 mAmbient = inAmbientMode;
-                if (mLowBitAmbient) {
+                if (mLowBitAmbient || mBurnInProtection) {
                     mHandPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
@@ -186,6 +194,24 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mBackgroundBitmap = Bitmap.createScaledBitmap(mBackgroundBitmap,
                     (int) (mBackgroundBitmap.getWidth() * scale),
                     (int) (mBackgroundBitmap.getHeight() * scale), true);
+
+            if(!mBurnInProtection || !mLowBitAmbient) {
+                initializeGrayBackgroundBitmap();
+            }
+        }
+
+        private void initializeGrayBackgroundBitmap() {
+            mGrayBackgroundBitmap = Bitmap.createBitmap(mBackgroundBitmap.getWidth(), mBackgroundBitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+            ColorMatrix colorMatrix =  new ColorMatrix();
+            colorMatrix.setSaturation(0);
+            ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
+
+            Paint grayPaint = new Paint();
+            grayPaint.setColorFilter(filter);
+
+            Canvas canvas = new Canvas(mGrayBackgroundBitmap);
+            canvas.drawBitmap(mBackgroundBitmap, 0, 0, grayPaint);
         }
 
         @Override
@@ -193,8 +219,13 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mTime.setToNow();
 
             // Draw the background.
-            canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
-
+            if(mAmbient && (mLowBitAmbient || mBurnInProtection)) {
+                canvas.drawColor(Color.BLACK);
+            } else if(mAmbient) {
+                canvas.drawBitmap(mGrayBackgroundBitmap, 0, 0, mBackgroundPaint);
+            } else {
+                canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
+            }
             /*
              * These calculations reflect the rotation in degrees per unit of
              * time, e.g. 360 / 60 = 6 and 360 / 12 = 30
@@ -216,12 +247,19 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
                     mCenterY - mMinuteHandLength, mHandPaint);
 
-            canvas.rotate(secondsRotation - minutesRotation, mCenterX, mCenterY);
-            canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
-                    mCenterY - mSecondHandLength, mHandPaint);
+            if(!mAmbient) {
+                canvas.rotate(secondsRotation - minutesRotation, mCenterX, mCenterY);
+                canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
+                        mCenterY - mSecondHandLength, mHandPaint);
+            }
+
             canvas.drawCircle(mCenterX, mCenterY, HAND_END_CAP_RADIUS, mHandPaint);
             // restore the canvas' original orientation.
             canvas.restore();
+
+            if(mAmbient) {
+                canvas.drawRect(mCardBounds, mBackgroundPaint);
+            }
         }
 
         @Override
@@ -241,6 +279,12 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             // Whether the timer should be running depends on whether we're visible (as well as
             // whether we're in ambient mode), so we may need to start or stop the timer.
             updateTimer();
+        }
+
+        @Override
+        public void onPeekCardPositionUpdate(Rect rect) {
+            super.onPeekCardPositionUpdate(rect);
+            mCardBounds.set(rect);
         }
 
         private void registerReceiver() {
