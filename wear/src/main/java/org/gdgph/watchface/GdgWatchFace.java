@@ -35,6 +35,7 @@ import android.os.Message;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.view.Gravity;
 import android.view.SurfaceHolder;
 
 import java.util.TimeZone;
@@ -123,6 +124,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                     .setBackgroundVisibility(WatchFaceStyle.BACKGROUND_VISIBILITY_INTERRUPTIVE)
                     .setShowSystemUiTime(false)
                     .setViewProtection(WatchFaceStyle.PROTECT_STATUS_BAR | WatchFaceStyle.PROTECT_HOTWORD_INDICATOR)
+                    .setHotwordIndicatorGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL)
                     .build());
 
             Resources resources = GdgWatchFace.this.getResources();
@@ -184,7 +186,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
 
             mWidth = width;
             mHeight = height;
-            mCenterX = mWidth/2f;
+            mCenterX = mWidth / 2f;
             mCenterY = mHeight / 2f;
             mHourHandLength = mCenterX * 0.5f;
             mMinuteHandLength = mCenterX * 0.6f;
@@ -196,7 +198,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                     (int) (mBackgroundBitmap.getWidth() * scale),
                     (int) (mBackgroundBitmap.getHeight() * scale), true);
 
-            if(!mBurnInProtection || !mLowBitAmbient) {
+            if (!mBurnInProtection || !mLowBitAmbient) {
                 initializeGrayBackgroundBitmap();
             }
         }
@@ -204,7 +206,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         private void initializeGrayBackgroundBitmap() {
             mGrayBackgroundBitmap = Bitmap.createBitmap(mBackgroundBitmap.getWidth(), mBackgroundBitmap.getHeight(), Bitmap.Config.ARGB_8888);
 
-            ColorMatrix colorMatrix =  new ColorMatrix();
+            ColorMatrix colorMatrix = new ColorMatrix();
             colorMatrix.setSaturation(0);
             ColorMatrixColorFilter filter = new ColorMatrixColorFilter(colorMatrix);
 
@@ -220,9 +222,9 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mTime.setToNow();
 
             // Draw the background.
-            if(mAmbient && (mLowBitAmbient || mBurnInProtection)) {
+            if (mAmbient && (mLowBitAmbient || mBurnInProtection)) {
                 canvas.drawColor(Color.BLACK);
-            } else if(mAmbient) {
+            } else if (mAmbient) {
                 canvas.drawBitmap(mGrayBackgroundBitmap, 0, 0, mBackgroundPaint);
             } else {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
@@ -248,7 +250,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
                     mCenterY - mMinuteHandLength, mHandPaint);
 
-            if(!mAmbient) {
+            if (!mAmbient) {
                 canvas.rotate(secondsRotation - minutesRotation, mCenterX, mCenterY);
                 canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
                         mCenterY - mSecondHandLength, mHandPaint);
@@ -258,7 +260,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             // restore the canvas' original orientation.
             canvas.restore();
 
-            if(mAmbient) {
+            if (mAmbient) {
                 canvas.drawRect(mCardBounds, mBackgroundPaint);
             }
         }
