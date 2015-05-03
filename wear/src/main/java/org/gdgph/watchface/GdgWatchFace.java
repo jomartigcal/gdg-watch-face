@@ -75,6 +75,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
 
         Paint mBackgroundPaint;
         Paint mHandPaint;
+        Paint mTickPaint;
         Bitmap mBackgroundBitmap;
         Bitmap mGrayBackgroundBitmap;
         boolean mAmbient;
@@ -142,6 +143,11 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mHandPaint.setShadowLayer(SHADOW_RADIUS, 0, 0, Color.BLACK);
             mHandPaint.setStyle(Paint.Style.STROKE);
 
+            mTickPaint = new Paint();
+            mTickPaint.setColor(Color.BLACK);
+            mTickPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
+            mTickPaint.setAntiAlias(true);
+
             mTime = new Time();
         }
 
@@ -171,6 +177,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient || mBurnInProtection) {
                     mHandPaint.setAntiAlias(!inAmbientMode);
+                    mTickPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
             }
@@ -229,6 +236,19 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             } else {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
             }
+
+            float innerTickRadius = mCenterX - 5;
+            float outerTickRadius = mCenterX;
+            for(int tickIndex = 0; tickIndex< 12; tickIndex ++) {
+                float tickRot = (float) (tickIndex * Math.PI * 2 / 12);
+                float innerX = (float) Math.sin(tickRot) * innerTickRadius;
+                float innerY = (float) -Math.cos(tickRot) * innerTickRadius;
+                float outerX = (float) Math.sin(tickRot) * outerTickRadius;
+                float outerY = (float) -Math.cos(tickRot) * outerTickRadius;
+                canvas.drawLine(mCenterX + innerX, mCenterY + innerY,
+                        mCenterX + outerX, mCenterY + outerY, mTickPaint);
+            }
+
             /*
              * These calculations reflect the rotation in degrees per unit of
              * time, e.g. 360 / 60 = 6 and 360 / 12 = 30
