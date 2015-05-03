@@ -24,6 +24,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -54,6 +55,18 @@ public class GdgWatchFace extends CanvasWatchFaceService {
     }
 
     private class Engine extends CanvasWatchFaceService.Engine {
+
+        private static final float HAND_END_CAP_RADIUS = 4f;
+        private static final float SHADOW_RADIUS = 6f;
+
+        private float mHourHandLength;
+        private float mMinuteHandLength;
+        private float mSecondHandLength;
+
+        private int mWidth;
+        private int mHeight;
+        private float mCenterX;
+        private float mCenterY;
 
         Paint mBackgroundPaint;
         Paint mHandPaint;
@@ -109,13 +122,15 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(resources.getColor(R.color.analog_background));
 
-            mBackgroundBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.gdg_background);
+            mBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_background);
 
             mHandPaint = new Paint();
             mHandPaint.setColor(resources.getColor(R.color.analog_hands));
             mHandPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
             mHandPaint.setAntiAlias(true);
             mHandPaint.setStrokeCap(Paint.Cap.ROUND);
+            mHandPaint.setShadowLayer(SHADOW_RADIUS, 0, 0, Color.BLACK);
+            mHandPaint.setStyle(Paint.Style.STROKE);
 
             mTime = new Time();
         }
@@ -158,6 +173,14 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         public void onSurfaceChanged(SurfaceHolder holder, int format, int width, int height) {
             super.onSurfaceChanged(holder, format, width, height);
 
+            mWidth = width;
+            mHeight = height;
+            mCenterX = mWidth/2f;
+            mCenterY = mHeight / 2f;
+            mHourHandLength = mCenterX * 0.5f;
+            mMinuteHandLength = mCenterX * 0.6f;
+            mSecondHandLength = mCenterX * 0.8f;
+
             float scale = ((float) width / (float) mBackgroundBitmap.getWidth());
 
             mBackgroundBitmap = Bitmap.createScaledBitmap(mBackgroundBitmap,
@@ -169,40 +192,36 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         public void onDraw(Canvas canvas, Rect bounds) {
             mTime.setToNow();
 
-            int width = bounds.width();
-            int height = bounds.height();
-
             // Draw the background.
             canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
 
-            // Find the center. Ignore the window insets so that, on round watches with a
-            // "chin", the watch face is centered on the entire screen, not just the usable
-            // portion.
-            float centerX = width / 2f;
-            float centerY = height / 2f;
+            /*
+             * These calculations reflect the rotation in degrees per unit of
+             * time, e.g. 360 / 60 = 6 and 360 / 12 = 30
+             */
+            final float secondsRotation = mTime.second * 6f;
+            final float minutesRotation = mTime.minute * 6f;
+            // account for the offset of the hour hand due to minutes of the hour.
+            final float hourHandOffset = mTime.minute / 2f;
+            final float hoursRotation = (mTime.hour * 30) + hourHandOffset;
 
-            float secRot = mTime.second / 30f * (float) Math.PI;
-            int minutes = mTime.minute;
-            float minRot = minutes / 30f * (float) Math.PI;
-            float hrRot = ((mTime.hour + (minutes / 60f)) / 6f) * (float) Math.PI;
+            // save the canvas state before we begin to rotate it
+            canvas.save();
 
-            float secLength = centerX - 20;
-            float minLength = centerX - 40;
-            float hrLength = centerX - 80;
+            canvas.rotate(hoursRotation, mCenterX, mCenterY);
+            canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
+                    mCenterY - mHourHandLength, mHandPaint);
 
-            if (!mAmbient) {
-                float secX = (float) Math.sin(secRot) * secLength;
-                float secY = (float) -Math.cos(secRot) * secLength;
-                canvas.drawLine(centerX, centerY, centerX + secX, centerY + secY, mHandPaint);
-            }
+            canvas.rotate(minutesRotation - hoursRotation, mCenterX, mCenterY);
+            canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
+                    mCenterY - mMinuteHandLength, mHandPaint);
 
-            float minX = (float) Math.sin(minRot) * minLength;
-            float minY = (float) -Math.cos(minRot) * minLength;
-            canvas.drawLine(centerX, centerY, centerX + minX, centerY + minY, mHandPaint);
-
-            float hrX = (float) Math.sin(hrRot) * hrLength;
-            float hrY = (float) -Math.cos(hrRot) * hrLength;
-            canvas.drawLine(centerX, centerY, centerX + hrX, centerY + hrY, mHandPaint);
+            canvas.rotate(secondsRotation - minutesRotation, mCenterX, mCenterY);
+            canvas.drawLine(mCenterX, mCenterY - HAND_END_CAP_RADIUS, mCenterX,
+                    mCenterY - mSecondHandLength, mHandPaint);
+            canvas.drawCircle(mCenterX, mCenterY, HAND_END_CAP_RADIUS, mHandPaint);
+            // restore the canvas' original orientation.
+            canvas.restore();
         }
 
         @Override
