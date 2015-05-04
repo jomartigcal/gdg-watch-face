@@ -195,7 +195,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mHeight = height;
             mCenterX = mWidth / 2f;
             mCenterY = mHeight / 2f;
-            mHourHandLength = mCenterX * 0.5f;
+            mHourHandLength = mCenterX * 0.4f;
             mMinuteHandLength = mCenterX * 0.6f;
             mSecondHandLength = mCenterX * 0.8f;
 
