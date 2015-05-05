@@ -126,6 +126,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                     .setShowSystemUiTime(false)
                     .setViewProtection(WatchFaceStyle.PROTECT_STATUS_BAR | WatchFaceStyle.PROTECT_HOTWORD_INDICATOR)
                     .setHotwordIndicatorGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL)
+                    .setStatusBarGravity(Gravity.CENTER_HORIZONTAL)
                     .build());
 
             Resources resources = GdgWatchFace.this.getResources();
