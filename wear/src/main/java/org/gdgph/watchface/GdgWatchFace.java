@@ -258,6 +258,9 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 float outerY = (float) -Math.cos(tickRot) * outerTickRadius;
                 canvas.drawLine(mCenterX + innerX, mCenterY + innerY,
                         mCenterX + outerX, mCenterY + outerY, mTickPaint);
+                if(tickIndex == 2) {
+                    canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mSecondHandLength, mCenterY, mTickPaint);
+                }
             }
 
             /*
