@@ -187,6 +187,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 mAmbient = inAmbientMode;
                 if (mLowBitAmbient || mBurnInProtection) {
                     mHandPaint.setAntiAlias(!inAmbientMode);
+                    mSecondHandPaint.setAntiAlias(!inAmbientMode);
                     mTickPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
