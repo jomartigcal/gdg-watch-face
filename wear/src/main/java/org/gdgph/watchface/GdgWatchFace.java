@@ -60,8 +60,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
 
     private class Engine extends CanvasWatchFaceService.Engine {
 
-        private static final float HAND_END_CAP_RADIUS = 4f;
-        private static final float SHADOW_RADIUS = 6f;
+        private static final float HAND_END_CAP_RADIUS = 5f;
 
         private Rect mCardBounds = new Rect();
 
@@ -77,7 +76,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         Paint mBackgroundPaint;
         Paint mHandPaint;
         Paint mSecondHandPaint;
-        Paint mTickPaint;
+        Paint mHourMarkerPaint;
         Paint mTextPaint;
         Bitmap mBackgroundBitmap;
         Bitmap mGrayBackgroundBitmap;
@@ -141,24 +140,21 @@ public class GdgWatchFace extends CanvasWatchFaceService {
 
             mHandPaint = new Paint();
             mHandPaint.setColor(resources.getColor(R.color.gdg_gray));
-            mHandPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
+            mHandPaint.setStrokeWidth(resources.getDimension(R.dimen.watch_hand_stroke));
             mHandPaint.setAntiAlias(true);
             mHandPaint.setStrokeCap(Paint.Cap.ROUND);
-            mHandPaint.setShadowLayer(SHADOW_RADIUS, 0, 0, Color.BLACK);
-            mHandPaint.setStyle(Paint.Style.STROKE);
 
             mSecondHandPaint = new Paint();
             mSecondHandPaint.setColor(resources.getColor(R.color.gdg_white));
-            mSecondHandPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
+            mSecondHandPaint.setStrokeWidth(resources.getDimension(R.dimen.second_hand_stroke));
             mSecondHandPaint.setAntiAlias(true);
             mSecondHandPaint.setStrokeCap(Paint.Cap.ROUND);
-            mHandPaint.setShadowLayer(SHADOW_RADIUS, 0, 0, Color.BLACK);
-            mSecondHandPaint.setStyle(Paint.Style.STROKE);
+            
 
-            mTickPaint = new Paint();
-            mTickPaint.setColor(Color.WHITE);
-            mTickPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
-            mTickPaint.setAntiAlias(true);
+            mHourMarkerPaint = new Paint();
+            mHourMarkerPaint.setColor(Color.WHITE);
+            mHourMarkerPaint.setStrokeWidth(resources.getDimension(R.dimen.hour_marker_stroke));
+            mHourMarkerPaint.setAntiAlias(true);
 
             mTextPaint = new Paint();
             mTextPaint.setColor(resources.getColor(R.color.gdg_white));
@@ -196,7 +192,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 if (mLowBitAmbient || mBurnInProtection) {
                     mHandPaint.setAntiAlias(!inAmbientMode);
                     mSecondHandPaint.setAntiAlias(!inAmbientMode);
-                    mTickPaint.setAntiAlias(!inAmbientMode);
+                    mHourMarkerPaint.setAntiAlias(!inAmbientMode);
                 }
                 invalidate();
             }
@@ -265,7 +261,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 float outerX = (float) Math.sin(tickRot) * outerTickRadius;
                 float outerY = (float) -Math.cos(tickRot) * outerTickRadius;
                 canvas.drawLine(mCenterX + innerX, mCenterY + innerY,
-                        mCenterX + outerX, mCenterY + outerY, mTickPaint);
+                        mCenterX + outerX, mCenterY + outerY, mHourMarkerPaint);
                 if(tickIndex == 2) {
                     canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mSecondHandLength, mCenterY, mTextPaint);
                 }
