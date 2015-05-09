@@ -248,7 +248,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
             }
 
-            float innerTickRadius = mCenterX - 5;
+            float innerTickRadius = mCenterX - 25;
             float outerTickRadius = mCenterX;
             for(int tickIndex = 0; tickIndex< 12; tickIndex ++) {
                 float tickRot = (float) (tickIndex * Math.PI * 2 / 12);
