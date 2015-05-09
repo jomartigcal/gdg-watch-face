@@ -29,6 +29,7 @@ import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Paint;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -77,6 +78,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         Paint mHandPaint;
         Paint mSecondHandPaint;
         Paint mTickPaint;
+        Paint mTextPaint;
         Bitmap mBackgroundBitmap;
         Bitmap mGrayBackgroundBitmap;
         boolean mAmbient;
@@ -157,6 +159,12 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mTickPaint.setColor(Color.WHITE);
             mTickPaint.setStrokeWidth(resources.getDimension(R.dimen.analog_hand_stroke));
             mTickPaint.setAntiAlias(true);
+
+            mTextPaint = new Paint();
+            mTextPaint.setColor(resources.getColor(R.color.gdg_white));
+            mTextPaint.setTypeface(Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD));
+            mTextPaint.setTextSize(resources.getDimension(R.dimen.font_hour_marker));
+            mTextPaint.setAntiAlias(true);
 
             mTime = new Time();
         }
@@ -259,7 +267,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 canvas.drawLine(mCenterX + innerX, mCenterY + innerY,
                         mCenterX + outerX, mCenterY + outerY, mTickPaint);
                 if(tickIndex == 2) {
-                    canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mSecondHandLength, mCenterY, mTickPaint);
+                    canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mSecondHandLength, mCenterY, mTextPaint);
                 }
             }
 
