@@ -149,7 +149,6 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mSecondHandPaint.setStrokeWidth(resources.getDimension(R.dimen.second_hand_stroke));
             mSecondHandPaint.setAntiAlias(true);
             mSecondHandPaint.setStrokeCap(Paint.Cap.ROUND);
-            
 
             mHourMarkerPaint = new Paint();
             mHourMarkerPaint.setColor(Color.WHITE);
@@ -263,7 +262,8 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 canvas.drawLine(mCenterX + innerX, mCenterY + innerY,
                         mCenterX + outerX, mCenterY + outerY, mHourMarkerPaint);
                 if(tickIndex == 2) {
-                    canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mSecondHandLength, mCenterY, mTextPaint);
+                    float textHeightOffset = (mTextPaint.descent() + mTextPaint.ascent())/2f;
+                    canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mMinuteHandLength, mCenterY - textHeightOffset, mTextPaint);
                 }
             }
 
