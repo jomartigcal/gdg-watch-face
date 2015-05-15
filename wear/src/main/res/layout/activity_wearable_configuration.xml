@@ -14,7 +14,7 @@
         android:layout_marginTop="14dp"
         android:fontFamily="sans-serif-light"
         android:gravity="center_horizontal"
-        android:text="Configure"
+        android:text="@string/label_configure"
         android:textColor="@color/wearable_config_header"
         android:textSize="24sp"
         app:layout_box="left|right|top" />
