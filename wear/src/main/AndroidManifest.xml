@@ -53,9 +53,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".BackgroundConfigActivity"
-            android:label="@string/label_configure"></activity>
-        <activity
             android:name=".ColorConfigActivity"
             android:label="@string/label_configure"></activity>
     </application>
