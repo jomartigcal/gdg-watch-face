@@ -1,6 +1,7 @@
 package org.gdgph.watchface;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.wearable.view.WearableListView;
 import android.widget.TextView;
@@ -24,7 +25,6 @@ public class WearableConfigurationActivity extends Activity {
         mListView.addOnScrollListener(new WearableListView.OnScrollListener() {
             @Override
             public void onScroll(int i) {
-
 
             }
 
@@ -65,13 +65,16 @@ public class WearableConfigurationActivity extends Activity {
                 WearableListItemLayout layout = (WearableListItemLayout) viewHolder.itemView;
 
                 TextView nameTextView = (TextView) layout.findViewById(R.id.setting_text_view);
-                String message = nameTextView.getText().toString();
-                Toast.makeText(WearableConfigurationActivity.this,
-                        message,
-                        Toast.LENGTH_SHORT).show();
-                switch ((viewHolder.getPosition())) {
-                    case 0:
-                        break;
+                String action = nameTextView.getText().toString();
+                if(action.contains("Background") || action.contains("Hand") || action.contains("Marker")) {
+                    Intent intent = new Intent(WearableConfigurationActivity.this, ColorConfigActivity.class);
+                    intent.putExtra(ColorConfigActivity.CONFIG_HEADER, action);
+                    startActivityForResult(intent, 0);//TODO change request code
+                } else if(action.contains("Date")) {
+                    //TODO on-off
+                    Toast.makeText(WearableConfigurationActivity.this,
+                            "on-off",
+                            Toast.LENGTH_SHORT).show();
                 }
             }
 

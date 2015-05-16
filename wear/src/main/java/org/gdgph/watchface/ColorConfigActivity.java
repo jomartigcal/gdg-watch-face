@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ColorConfigActivity extends Activity {
+    public static final String CONFIG_HEADER = "org.gdgph.watchface.CONFIG_HEADER";
+
+    private String mHeader;
 
     private WearableListView mListView;
 
@@ -19,6 +22,12 @@ public class ColorConfigActivity extends Activity {
         setContentView(R.layout.activity_wearable_configuration);
 
         final TextView headerText = (TextView) findViewById(R.id.settings_header);
+        if (getIntent().getExtras().containsKey(CONFIG_HEADER)) {
+            mHeader = getIntent().getStringExtra(CONFIG_HEADER);
+            headerText.setText(mHeader);
+        } else {
+            finish();
+        }
 
         mListView = (WearableListView) findViewById(R.id.settings_list);
         mListView.addOnScrollListener(new WearableListView.OnScrollListener() {
@@ -44,34 +53,41 @@ public class ColorConfigActivity extends Activity {
             }
         });
 
-        loadConfigurations();
+
+        displayColorSelections();
     }
 
-    private void loadConfigurations() {
-        List<WearableConfiguration> configurationList = new ArrayList<>();
-        configurationList.add(new WearableConfiguration(R.drawable.ic_palette, "Background"));
-        configurationList.add(new WearableConfiguration(R.drawable.ic_date_on, "Date"));
-        configurationList.add(new WearableConfiguration(R.drawable.ic_palette, "Hour Hand"));
-        configurationList.add(new WearableConfiguration(R.drawable.ic_palette, "Minute Hand"));
-        configurationList.add(new WearableConfiguration(R.drawable.ic_palette, "Second Hand"));
-        configurationList.add(new WearableConfiguration(R.drawable.ic_palette, "Hour Marker"));
+    private void displayColorSelections() {
+        List<String> colorList = new ArrayList<>();
 
-        WearableConfigAdapter adapter = new WearableConfigAdapter(this, configurationList);
+        if (mHeader.contains("Background")) {
+            String[] backgrounds = getResources().getStringArray(R.array.background_selection);
+            for (String background : backgrounds) {
+                colorList.add(background);
+            }
+        } else {
+            String[] colors = getResources().getStringArray(R.array.color_selection);
+            for (String color : colors) {
+                colorList.add(color);
+            }
+        }
+
+        ColorConfigAdapter adapter = new ColorConfigAdapter(this, colorList);
         mListView.setAdapter(adapter);
         mListView.setClickListener(new WearableListView.ClickListener() {
             @Override
             public void onClick(WearableListView.ViewHolder viewHolder) {
                 WearableListItemLayout layout = (WearableListItemLayout) viewHolder.itemView;
-
+//
                 TextView nameTextView = (TextView) layout.findViewById(R.id.setting_text_view);
                 String message = nameTextView.getText().toString();
                 Toast.makeText(ColorConfigActivity.this,
                         message,
                         Toast.LENGTH_SHORT).show();
-                switch ((viewHolder.getPosition())) {
-                    case 0:
-                        break;
-                }
+//                switch ((viewHolder.getPosition())) {
+//                    case 0:
+//                        break;
+//                }
             }
 
             @Override

@@ -43,7 +43,7 @@
 
         <activity
             android:name=".WearableConfigurationActivity"
-            android:label="@string/title_activity_wearable_configuration">
+            android:label="@string/label_configure">
             <intent-filter>
                 <action android:name="org.gdgph.watchface.CONFIG" />
 
@@ -54,10 +54,10 @@
         </activity>
         <activity
             android:name=".BackgroundConfigActivity"
-            android:label="@string/title_activity_wearable_configuration"></activity>
+            android:label="@string/label_configure"></activity>
         <activity
             android:name=".ColorConfigActivity"
-            android:label="@string/title_activity_wearable_configuration"></activity>
+            android:label="@string/label_configure"></activity>
     </application>
 
 </manifest>
