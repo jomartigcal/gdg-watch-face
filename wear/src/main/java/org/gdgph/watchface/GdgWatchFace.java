@@ -128,7 +128,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                     .setShowSystemUiTime(false)
                     .setViewProtection(WatchFaceStyle.PROTECT_STATUS_BAR | WatchFaceStyle.PROTECT_HOTWORD_INDICATOR)
                     .setHotwordIndicatorGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL)
-                    .setStatusBarGravity(Gravity.CENTER_HORIZONTAL)
+                    .setStatusBarGravity(Gravity.CENTER | Gravity.LEFT)
                     .setPeekOpacityMode(WatchFaceStyle.PEEK_OPACITY_MODE_TRANSLUCENT)
                     .build());
 
@@ -290,6 +290,8 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                     mCenterY - mMinuteHandLength, mHandPaint);
 
             if (!mAmbient) {
+//                float seconds45 = 45 *6f;
+//                canvas.rotate(seconds45 - minutesRotation, mCenterX, mCenterY);
                 canvas.rotate(secondsRotation - minutesRotation, mCenterX, mCenterY);
                 canvas.drawLine(mCenterX, mCenterY, mCenterX,
                         mCenterY - mSecondHandLength, mSecondHandPaint);
