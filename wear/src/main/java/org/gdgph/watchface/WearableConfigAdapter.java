@@ -3,6 +3,7 @@ package org.gdgph.watchface;
 import android.content.Context;
 import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WearableListView;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
@@ -31,6 +32,9 @@ public class WearableConfigAdapter extends WearableListView.Adapter {
 
         TextView nameTextView = (TextView) layout.findViewById(R.id.setting_text_view);
         nameTextView.setText(configuration.getTitle());
+
+        TextView settingTextView = (TextView) layout.findViewById(R.id.subsetting_text_view);
+        settingTextView.setVisibility("Date".equals(nameTextView.getText().toString()) ? View.VISIBLE : View.GONE);
 
         CircledImageView circleImage = (CircledImageView) layout.findViewById(R.id.setting_circle);
         circleImage.setImageResource(configuration.getIcon());

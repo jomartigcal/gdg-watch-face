@@ -3,6 +3,7 @@ package org.gdgph.watchface;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WearableListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,15 +67,22 @@ public class WearableConfigurationActivity extends Activity {
 
                 TextView nameTextView = (TextView) layout.findViewById(R.id.setting_text_view);
                 String action = nameTextView.getText().toString();
-                if(action.contains("Background") || action.contains("Hand") || action.contains("Marker")) {
+                if (action.contains("Background") || action.contains("Hand") || action.contains("Marker")) {
                     Intent intent = new Intent(WearableConfigurationActivity.this, ColorConfigActivity.class);
                     intent.putExtra(ColorConfigActivity.CONFIG_HEADER, action);
                     startActivityForResult(intent, 0);//TODO change request code
-                } else if(action.contains("Date")) {
+                } else if (action.contains("Date")) {
+                    TextView settingTextView = (TextView) layout.findViewById(R.id.subsetting_text_view);
+                    CircledImageView circleImage = (CircledImageView) layout.findViewById(R.id.setting_circle);
+
+                    if (getString(R.string.label_setting_on).equals(settingTextView.getText().toString())) {
+                        settingTextView.setText(getString(R.string.label_setting_off));
+                        circleImage.setImageResource(R.drawable.ic_date_off);
+                    } else {
+                        settingTextView.setText(getString(R.string.label_setting_on));
+                        circleImage.setImageResource(R.drawable.ic_date_on);
+                    }
                     //TODO on-off
-                    Toast.makeText(WearableConfigurationActivity.this,
-                            "on-off",
-                            Toast.LENGTH_SHORT).show();
                 }
             }
 

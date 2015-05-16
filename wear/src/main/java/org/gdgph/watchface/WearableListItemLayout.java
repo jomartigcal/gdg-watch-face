@@ -12,12 +12,14 @@ public class WearableListItemLayout extends FrameLayout implements WearableListV
 
     private CircledImageView mCircle;
     private TextView mName;
+    private TextView mOnOffText;
 
     public WearableListItemLayout(Context context) {
         super(context);
         View.inflate(context, R.layout.list_wearable_config, this);
         mCircle = (CircledImageView) findViewById(R.id.setting_circle);
         mName = (TextView) findViewById(R.id.setting_text_view);
+        mOnOffText = (TextView) findViewById(R.id.subsetting_text_view);
 
     }
 
@@ -34,12 +36,14 @@ public class WearableListItemLayout extends FrameLayout implements WearableListV
         super.onFinishInflate();
         mCircle = (CircledImageView) findViewById(R.id.setting_circle);
         mName = (TextView) findViewById(R.id.setting_text_view);
+        mOnOffText = (TextView) findViewById(R.id.subsetting_text_view);
     }
 
     @Override
     public void onCenterPosition(boolean b) {
         mCircle.animate().scaleX(1f).scaleY(1f).alpha(1);
         mName.animate().scaleX(1f).scaleY(1f).alpha(1);
+        mOnOffText.animate().scaleX(1f).scaleY(1f).alpha(1);
 //        ((GradientDrawable) mCircle.getDrawable()).setColor(mChosenCircleColor);
     }
 
@@ -47,6 +51,7 @@ public class WearableListItemLayout extends FrameLayout implements WearableListV
     public void onNonCenterPosition(boolean b) {
         mCircle.animate().scaleX(0.8f).scaleY(0.8f).alpha(06f);
         mName.animate().scaleX(0.8f).scaleY(0.8f).alpha(0.6f);
+        mOnOffText.animate().scaleX(0.8f).scaleY(0.8f).alpha(0.6f);
     }
 
 }
