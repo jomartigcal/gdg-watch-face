@@ -1,16 +1,18 @@
 package org.gdgph.watchface;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WearableListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class ColorConfigActivity extends Activity {
     public static final String CONFIG_HEADER = "org.gdgph.watchface.CONFIG_HEADER";
+    public static final String CONFIG_COLOR = "org.gdgph.watchface.CONFIG_COLOR";
 
     private String mHeader;
 
@@ -53,7 +55,6 @@ public class ColorConfigActivity extends Activity {
             }
         });
 
-
         displayColorSelections();
     }
 
@@ -78,16 +79,13 @@ public class ColorConfigActivity extends Activity {
             @Override
             public void onClick(WearableListView.ViewHolder viewHolder) {
                 WearableListItemLayout layout = (WearableListItemLayout) viewHolder.itemView;
-//
-                TextView nameTextView = (TextView) layout.findViewById(R.id.setting_text_view);
-                String message = nameTextView.getText().toString();
-                Toast.makeText(ColorConfigActivity.this,
-                        message,
-                        Toast.LENGTH_SHORT).show();
-//                switch ((viewHolder.getPosition())) {
-//                    case 0:
-//                        break;
-//                }
+                CircledImageView circleImage = (CircledImageView) layout.findViewById(R.id.setting_circle);
+
+                Intent intent = new Intent();
+                intent.putExtra(CONFIG_HEADER, mHeader);
+                intent.putExtra(CONFIG_COLOR, circleImage.getDefaultCircleColor());
+                setResult(RESULT_OK, intent);
+                finish();
             }
 
             @Override
