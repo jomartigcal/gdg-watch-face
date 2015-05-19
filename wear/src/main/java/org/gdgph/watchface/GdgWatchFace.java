@@ -342,11 +342,11 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             }
 
             if (mDisplayDate) {
-                canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mMinuteHandLength,
+                canvas.drawText(formatTwoDigitNumber(mTime.monthDay), mCenterX + mMinuteHandLength,
                         mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
             }
 
-            canvas.drawText(mTime.hour + ":" + mTime.minute, mCenterX - mSecondHandLength, mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
+            canvas.drawText(formatTwoDigitNumber(mTime.hour) + ":" + formatTwoDigitNumber(mTime.minute), mCenterX - mSecondHandLength, mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
 
             /*
              * These calculations reflect the rotation in degrees per unit of
@@ -460,6 +460,10 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             }
 
             return paint;
+        }
+
+        private String formatTwoDigitNumber(int number) {
+            return String.format("%02d", number);
         }
 
         @Override
