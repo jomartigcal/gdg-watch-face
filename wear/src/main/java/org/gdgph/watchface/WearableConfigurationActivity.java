@@ -10,6 +10,14 @@ import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.wearable.DataApi;
+import com.google.android.gms.wearable.DataEvent;
+import com.google.android.gms.wearable.DataEventBuffer;
+import com.google.android.gms.wearable.DataItem;
+import com.google.android.gms.wearable.DataItemBuffer;
+import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.PutDataMapRequest;
 import com.google.android.gms.wearable.PutDataRequest;
 import com.google.android.gms.wearable.Wearable;
@@ -17,7 +25,7 @@ import com.google.android.gms.wearable.Wearable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class WearableConfigurationActivity extends Activity {
+public class WearableConfigurationActivity extends Activity implements DataApi.DataListener {
     public static final String PATH = "/watchface/config";
     public static final String CONFIG_BACKGROUND = "Background";
     public static final String CONFIG_DATE = "Date";
@@ -32,6 +40,7 @@ public class WearableConfigurationActivity extends Activity {
     private WearableListView mListView;
 
     private GoogleApiClient mGoogleApiClient;
+    private boolean mDisplayDate = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,8 +73,6 @@ public class WearableConfigurationActivity extends Activity {
             }
         });
 
-        loadConfigurations();
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addApi(Wearable.API)
                 .addConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
@@ -86,17 +93,42 @@ public class WearableConfigurationActivity extends Activity {
                     }
                 })
                 .build();
+
+        loadConfigurations();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
+        Wearable.DataApi.addListener(mGoogleApiClient, this);
+        Wearable.DataApi.getDataItems(mGoogleApiClient)
+                .setResultCallback(new ResultCallback<DataItemBuffer>() {
+                    @Override
+                    public void onResult(DataItemBuffer dataItems) {
+                        for (DataItem item : dataItems) {
+                            updateConfig(item);
+                        }
+
+                        dataItems.release();
+                    }
+                });
+    }
+
+    private void updateConfig(DataItem item) {
+        if (WearableConfigurationActivity.PATH.equals(item.getUri().getPath())) {
+            DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+            if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_DATE)) {
+                mDisplayDate = dataMap.getBoolean(WearableConfigurationActivity.CONFIG_DATE, true);
+                loadConfigurations();
+            }
+        }
     }
 
     @Override
     protected void onStop() {
         if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
+            Wearable.DataApi.removeListener(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
 
@@ -118,11 +150,10 @@ public class WearableConfigurationActivity extends Activity {
         }
     }
 
-
     private void loadConfigurations() {
         List<WearableConfiguration> configurationList = new ArrayList<>();
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_BACKGROUND));
-        configurationList.add(new WearableConfiguration(R.drawable.ic_date_on, CONFIG_DATE));
+        configurationList.add(new WearableConfiguration(R.drawable.ic_date_on, CONFIG_DATE, mDisplayDate));
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_HAND_HOUR));
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_HAND_MINUTE));
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_HAND_SECOND));
@@ -165,5 +196,17 @@ public class WearableConfigurationActivity extends Activity {
 
             }
         });
+    }
+
+    @Override
+    public void onDataChanged(DataEventBuffer dataEventBuffer) {
+        for (DataEvent dataEvent : dataEventBuffer) {
+            if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
+                DataItem item = dataEvent.getDataItem();
+                updateConfig(item);
+            }
+        }
+
+        dataEventBuffer.release();
     }
 }
