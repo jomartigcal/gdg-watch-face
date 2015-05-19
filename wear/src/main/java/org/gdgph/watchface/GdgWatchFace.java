@@ -221,10 +221,10 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                         public void onResult(DataItemBuffer dataItems) {
                             for (DataItem item : dataItems) {
                                 updateConfig(item);
+                                invalidateIfNecessary();
                             }
 
                             dataItems.release();
-                            invalidateIfNecessary();
                         }
                     });
         }
@@ -464,11 +464,11 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
                     DataItem item = dataEvent.getDataItem();
                     updateConfig(item);
+                    invalidateIfNecessary();
                 }
             }
 
             dataEvents.release();
-            invalidateIfNecessary();
         }
 
         private void updateConfig(DataItem item) {
