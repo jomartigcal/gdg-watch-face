@@ -327,6 +327,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
             }
 
+            float textHeightOffset = (mTextPaint.descent() + mTextPaint.ascent()) / 2f;
             float innerTickRadius = mCenterX - 25;
             float outerTickRadius = mCenterX;
             for (int tickIndex = 0; tickIndex < 12; tickIndex++) {
@@ -337,12 +338,15 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 float outerY = (float) -Math.cos(tickRot) * outerTickRadius;
                 canvas.drawLine(mCenterX + innerX, mCenterY + innerY,
                         mCenterX + outerX, mCenterY + outerY, getAdjustedPaintColor(mHourMarkerPaint));
-                if (tickIndex == 2 && mDisplayDate) {
-                    float textHeightOffset = (mTextPaint.descent() + mTextPaint.ascent()) / 2f;
-                    canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mMinuteHandLength,
-                            mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
-                }
+
             }
+
+            if (mDisplayDate) {
+                canvas.drawText(String.valueOf(mTime.monthDay), mCenterX + mMinuteHandLength,
+                        mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
+            }
+
+            canvas.drawText(mTime.hour + ":" + mTime.minute, mCenterX - mSecondHandLength, mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
 
             /*
              * These calculations reflect the rotation in degrees per unit of
