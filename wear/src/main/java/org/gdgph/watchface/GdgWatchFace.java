@@ -167,7 +167,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
 
             mMinuteHandPaint = new Paint();
             mMinuteHandPaint.setColor(resources.getColor(R.color.gdg_gray));
-            mMinuteHandPaint.setStrokeWidth(resources.getDimension(R.dimen.second_hand_stroke));
+            mMinuteHandPaint.setStrokeWidth(resources.getDimension(R.dimen.watch_hand_stroke));
             mMinuteHandPaint.setAntiAlias(true);
             mMinuteHandPaint.setStrokeCap(Paint.Cap.ROUND);
 
