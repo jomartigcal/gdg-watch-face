@@ -11,8 +11,8 @@ import java.util.List;
 
 public class WearableConfigAdapter extends WearableListView.Adapter {
 
-    private final Context mContext;
-    private final List<WearableConfiguration> mConfigurations;
+    private Context mContext;
+    private List<WearableConfiguration> mConfigurations;
 
     public WearableConfigAdapter(Context context, List<WearableConfiguration> mConfigurations) {
         mContext = context;
@@ -45,5 +45,10 @@ public class WearableConfigAdapter extends WearableListView.Adapter {
     @Override
     public int getItemCount() {
         return mConfigurations.size();
+    }
+
+    public void setConfigurations(List<WearableConfiguration> mConfigurations) {
+        this.mConfigurations = mConfigurations;
+        notifyDataSetChanged();
     }
 }

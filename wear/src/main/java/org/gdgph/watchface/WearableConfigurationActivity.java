@@ -26,7 +26,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class WearableConfigurationActivity extends Activity implements DataApi.DataListener {
-    public static final String PATH = "/watchface/config";
+    public static final String PATH_BACKGROUND = "/watchface/background";
+    public static final String PATH_DATE = "/watchface/date";
+    public static final String PATH_HOUR_HAND = "/watchface/hour_hand";
+    public static final String PATH_MINUTE_HAND = "/watchface/minute_hand";
+    public static final String PATH_SECOND_HAND = "/watchface/second_hand";
+    public static final String PATH_HOUR_MARKER = "/watchface/hour_marker";
     public static final String CONFIG_BACKGROUND = "Background";
     public static final String CONFIG_DATE = "Date";
     public static final String CONFIG_HAND_HOUR = "Hour Hand";
@@ -73,7 +78,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
             public void onCentralPositionChanged(int i) {
 
             }
-        });        
+        });
         mListView.setClickListener(new WearableListView.ClickListener() {
             @Override
             public void onClick(WearableListView.ViewHolder viewHolder) {
@@ -88,7 +93,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
                 } else if (CONFIG_DATE.equals(action)) {
                     TextView settingTextView = (TextView) layout.findViewById(R.id.subsetting_text_view);
                     CircledImageView circleImage = (CircledImageView) layout.findViewById(R.id.setting_circle);
-                    PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(PATH);
+                    PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(PATH_DATE);
 
                     if (getString(R.string.label_setting_on).equals(settingTextView.getText().toString())) {
                         settingTextView.setText(getString(R.string.label_setting_off));
@@ -103,6 +108,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
                         mDisplayDate = true;
                         updateConfigurations();
                     }
+
                     PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
                     Wearable.DataApi.putDataItem(mGoogleApiClient, putDataRequest);
                 }
@@ -155,7 +161,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
     }
 
     private void updateConfig(DataItem item) {
-        if (WearableConfigurationActivity.PATH.equals(item.getUri().getPath())) {
+        if (WearableConfigurationActivity.PATH_DATE.equals(item.getUri().getPath())) {
             DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
             if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_DATE)) {
                 mDisplayDate = dataMap.getBoolean(WearableConfigurationActivity.CONFIG_DATE, true);
@@ -178,21 +184,35 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(PATH);
         if (requestCode == REQUEST_COLOR && resultCode == RESULT_OK) {
             int color = data.getIntExtra(ColorConfigActivity.CONFIG_COLOR, 0);
             String action = data.getStringExtra(ColorConfigActivity.CONFIG_HEADER);
-            putDataMapRequest.getDataMap().putInt(action, color);
 
+            PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(getDataPath(action));
+            putDataMapRequest.getDataMap().putInt(action, color);
             PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
             Wearable.DataApi.putDataItem(mGoogleApiClient, putDataRequest);
         }
     }
 
+    private String getDataPath(String action) {
+        if (CONFIG_BACKGROUND.equals(action)) {
+            return PATH_BACKGROUND;
+        } else if (CONFIG_HAND_HOUR.equals(action)) {
+            return PATH_HOUR_HAND;
+        } else if (CONFIG_HAND_MINUTE.equals(action)) {
+            return PATH_MINUTE_HAND;
+        } else if (CONFIG_HAND_SECOND.equals(action)) {
+            return PATH_SECOND_HAND;
+        } else if (CONFIG_HOUR_MARKER.equals(action)) {
+            return PATH_HOUR_MARKER;
+        } else {
+            return "";
+        }
+    }
+
     private void updateConfigurations() {
-        mAdapter = new WearableConfigAdapter(this, getConfigurations());
-        mListView.setAdapter(mAdapter);
-//        mAdapter.notifyDataSetChanged();
+        mAdapter.setConfigurations(getConfigurations());
     }
 
     private List<WearableConfiguration> getConfigurations() {

@@ -75,31 +75,6 @@ public class GdgWatchFace extends CanvasWatchFaceService {
     private class Engine extends CanvasWatchFaceService.Engine implements DataApi.DataListener {
 
         private static final float HAND_END_CAP_RADIUS = 5f;
-
-        private Rect mCardBounds = new Rect();
-
-        private float mHourHandLength;
-        private float mMinuteHandLength;
-        private float mSecondHandLength;
-
-        private int mWidth;
-        private int mHeight;
-        private float mCenterX;
-        private float mCenterY;
-
-        Paint mBackgroundPaint;
-        Paint mHourHandPaint;
-        Paint mMinuteHandPaint;
-        Paint mSecondHandPaint;
-        Paint mHourMarkerPaint;
-        Paint mTextPaint;
-        Bitmap mBackgroundBitmap;
-        Bitmap mGrayBackgroundBitmap;
-        boolean mAmbient;
-        boolean mLightMode = false;
-        boolean mDisplayDate = true;
-        Time mTime;
-
         /**
          * Handler to update the time once a second in interactive mode.
          */
@@ -117,7 +92,20 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 }
             }
         };
-
+        Paint mBackgroundPaint;
+        Paint mHourHandPaint;
+        Paint mMinuteHandPaint;
+        Paint mSecondHandPaint;
+        Paint mHourMarkerPaint;
+        Paint mTextPaint;
+        Bitmap mBackgroundBitmap;
+        Bitmap mDarkBackgroundBitmap;
+        Bitmap mLightBackgroundBitmap;
+        Bitmap mGrayBackgroundBitmap;
+        boolean mAmbient;
+        boolean mLightMode = false;
+        boolean mDisplayDate = true;
+        Time mTime;
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
@@ -125,18 +113,22 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 mTime.setToNow();
             }
         };
-
-        private GoogleApiClient mGoogleApiClient;
-
         boolean mRegisteredTimeZoneReceiver = false;
-
         /**
          * Whether the display supports fewer bits for each color in ambient mode. When true, we
          * disable anti-aliasing in ambient mode.
          */
         boolean mLowBitAmbient;
-
         boolean mBurnInProtection;
+        private Rect mCardBounds = new Rect();
+        private float mHourHandLength;
+        private float mMinuteHandLength;
+        private float mSecondHandLength;
+        private int mWidth;
+        private int mHeight;
+        private float mCenterX;
+        private float mCenterY;
+        private GoogleApiClient mGoogleApiClient;
 
         @Override
         public void onCreate(SurfaceHolder holder) {
@@ -158,6 +150,8 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mBackgroundPaint.setColor(resources.getColor(R.color.gdg_black));
 
             mBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_black);
+            mDarkBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_black);
+            mLightBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_background);
 
             mHourHandPaint = new Paint();
             mHourHandPaint.setColor(resources.getColor(R.color.gdg_gray));
@@ -294,7 +288,12 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mBackgroundBitmap = Bitmap.createScaledBitmap(mBackgroundBitmap,
                     (int) (mBackgroundBitmap.getWidth() * scale),
                     (int) (mBackgroundBitmap.getHeight() * scale), true);
-
+            mDarkBackgroundBitmap = Bitmap.createScaledBitmap(mDarkBackgroundBitmap,
+                    (int) (mDarkBackgroundBitmap.getWidth() * scale),
+                    (int) (mDarkBackgroundBitmap.getHeight() * scale), true);
+            mLightBackgroundBitmap = Bitmap.createScaledBitmap(mLightBackgroundBitmap,
+                    (int) (mLightBackgroundBitmap.getWidth() * scale),
+                    (int) (mLightBackgroundBitmap.getHeight() * scale), true);
             if (!mBurnInProtection || !mLowBitAmbient) {
                 initializeGrayBackgroundBitmap();
             }
@@ -321,7 +320,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             // Draw the background.
             if (mAmbient && (mLowBitAmbient || mBurnInProtection)) {
                 canvas.drawColor(Color.BLACK);
-            } else if (mAmbient) {
+            } else if (mAmbient) {//TODO gray ambient BG for light mode
                 canvas.drawBitmap(mGrayBackgroundBitmap, 0, 0, mBackgroundPaint);
             } else {
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
@@ -346,7 +345,8 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                         mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
             }
 
-            canvas.drawText(formatTwoDigitNumber(mTime.hour) + ":" + formatTwoDigitNumber(mTime.minute), mCenterX - mSecondHandLength, mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
+            canvas.drawText(formatTwoDigitNumber(mTime.hour) + ":" + formatTwoDigitNumber(mTime.minute),
+                    mCenterX - mSecondHandLength, mCenterY - textHeightOffset, getAdjustedPaintColor(mTextPaint));
 
             /*
              * These calculations reflect the rotation in degrees per unit of
@@ -370,8 +370,6 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                     mCenterY - mMinuteHandLength, getAdjustedPaintColor(mMinuteHandPaint));
 
             if (!mAmbient) {
-//                float seconds45 = 45 *6f;
-//                canvas.rotate(seconds45 - minutesRotation, mCenterX, mCenterY);
                 canvas.rotate(secondsRotation - minutesRotation, mCenterX, mCenterY);
                 canvas.drawLine(mCenterX, mCenterY, mCenterX,
                         mCenterY - mSecondHandLength, mSecondHandPaint);
@@ -480,36 +478,42 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         }
 
         private void updateConfig(DataItem item) {
-            if (WearableConfigurationActivity.PATH.equals(item.getUri().getPath())) {
-                DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-                if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_BACKGROUND)) {
-                    int background = dataMap.getInt(WearableConfigurationActivity.CONFIG_BACKGROUND);
-                    updateBackground(background);
-                } else if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_HAND_HOUR)) {
-                    int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HAND_HOUR);
-                    updateHourHand(color);
-                } else if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_HAND_MINUTE)) {
-                    int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HAND_MINUTE);
-                    updateMinuteHand(color);
-                } else if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_HAND_SECOND)) {
-                    int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HAND_SECOND);
-                    updateSecondHand(color);
-                } else if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_HOUR_MARKER)) {
-                    int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HOUR_MARKER);
-                    updateHourMarker(color);
-                } else if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_DATE)) {
-                    mDisplayDate = dataMap.getBoolean(WearableConfigurationActivity.CONFIG_DATE, true);
-                }
+            DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
+
+            if (WearableConfigurationActivity.PATH_BACKGROUND.equals(item.getUri().getPath()) &&
+                    dataMap.containsKey(WearableConfigurationActivity.CONFIG_BACKGROUND)) {
+                int background = dataMap.getInt(WearableConfigurationActivity.CONFIG_BACKGROUND);
+                updateBackground(background);
+            } else if (WearableConfigurationActivity.PATH_HOUR_HAND.equals(item.getUri().getPath()) &&
+                    dataMap.containsKey(WearableConfigurationActivity.CONFIG_HAND_HOUR)) {
+                int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HAND_HOUR);
+                updateHourHand(color);
+            } else if (WearableConfigurationActivity.PATH_MINUTE_HAND.equals(item.getUri().getPath()) &&
+                    dataMap.containsKey(WearableConfigurationActivity.CONFIG_HAND_MINUTE)) {
+                int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HAND_MINUTE);
+                updateMinuteHand(color);
+            } else if (WearableConfigurationActivity.PATH_SECOND_HAND.equals(item.getUri().getPath()) &&
+                    dataMap.containsKey(WearableConfigurationActivity.CONFIG_HAND_SECOND)) {
+                int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HAND_SECOND);
+                updateSecondHand(color);
+            } else if (WearableConfigurationActivity.PATH_HOUR_MARKER.equals(item.getUri().getPath()) &&
+                    dataMap.containsKey(WearableConfigurationActivity.CONFIG_HOUR_MARKER)) {
+                int color = dataMap.getInt(WearableConfigurationActivity.CONFIG_HOUR_MARKER);
+                updateHourMarker(color);
+            } else if (WearableConfigurationActivity.PATH_DATE.equals(item.getUri().getPath()) &&
+                    dataMap.containsKey(WearableConfigurationActivity.CONFIG_DATE)) {
+                mDisplayDate = dataMap.getBoolean(WearableConfigurationActivity.CONFIG_DATE, true);
             }
+
         }
 
         private void updateBackground(int background) {
-            Resources resources = GdgWatchFace.this.getResources();
-            if(background == Color.WHITE) {
-                mBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_background);
+            if (background == Color.WHITE) {
+                mBackgroundBitmap = mLightBackgroundBitmap;
             } else {
-                mBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_black);
+                mBackgroundBitmap = mDarkBackgroundBitmap;
             }
+
         }
 
         private void updateHourHand(int color) {
