@@ -38,7 +38,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
     private static final int REQUEST_COLOR = 0;
 
     private WearableListView mListView;
-
+    private WearableConfigAdapter mAdapter;
     private GoogleApiClient mGoogleApiClient;
     private boolean mDisplayDate = true;
 
@@ -50,6 +50,8 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
         final TextView headerText = (TextView) findViewById(R.id.settings_header);
 
         mListView = (WearableListView) findViewById(R.id.settings_list);
+        mAdapter = new WearableConfigAdapter(this, getConfigurations());
+        mListView.setAdapter(mAdapter);
         mListView.addOnScrollListener(new WearableListView.OnScrollListener() {
             @Override
             public void onScroll(int i) {
@@ -69,6 +71,45 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
 
             @Override
             public void onCentralPositionChanged(int i) {
+
+            }
+        });        
+        mListView.setClickListener(new WearableListView.ClickListener() {
+            @Override
+            public void onClick(WearableListView.ViewHolder viewHolder) {
+                WearableListItemLayout layout = (WearableListItemLayout) viewHolder.itemView;
+
+                TextView nameTextView = (TextView) layout.findViewById(R.id.setting_text_view);
+                String action = nameTextView.getText().toString();
+                if (action.contains("Background") || action.contains("Hand") || action.contains("Marker")) {
+                    Intent intent = new Intent(WearableConfigurationActivity.this, ColorConfigActivity.class);
+                    intent.putExtra(ColorConfigActivity.CONFIG_HEADER, action);
+                    startActivityForResult(intent, REQUEST_COLOR);
+                } else if (CONFIG_DATE.equals(action)) {
+                    TextView settingTextView = (TextView) layout.findViewById(R.id.subsetting_text_view);
+                    CircledImageView circleImage = (CircledImageView) layout.findViewById(R.id.setting_circle);
+                    PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(PATH);
+
+                    if (getString(R.string.label_setting_on).equals(settingTextView.getText().toString())) {
+                        settingTextView.setText(getString(R.string.label_setting_off));
+                        circleImage.setImageResource(R.drawable.ic_date_off);
+                        putDataMapRequest.getDataMap().putBoolean(action, false);
+                        mDisplayDate = false;
+                        updateConfigurations();
+                    } else {
+                        settingTextView.setText(getString(R.string.label_setting_on));
+                        circleImage.setImageResource(R.drawable.ic_date_on);
+                        putDataMapRequest.getDataMap().putBoolean(action, true);
+                        mDisplayDate = true;
+                        updateConfigurations();
+                    }
+                    PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
+                    Wearable.DataApi.putDataItem(mGoogleApiClient, putDataRequest);
+                }
+            }
+
+            @Override
+            public void onTopEmptyRegionClick() {
 
             }
         });
@@ -93,8 +134,6 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
                     }
                 })
                 .build();
-
-        loadConfigurations();
     }
 
     @Override
@@ -120,7 +159,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
             DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
             if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_DATE)) {
                 mDisplayDate = dataMap.getBoolean(WearableConfigurationActivity.CONFIG_DATE, true);
-                loadConfigurations();
+                updateConfigurations();
             }
         }
     }
@@ -150,7 +189,13 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
         }
     }
 
-    private void loadConfigurations() {
+    private void updateConfigurations() {
+        mAdapter = new WearableConfigAdapter(this, getConfigurations());
+        mListView.setAdapter(mAdapter);
+//        mAdapter.notifyDataSetChanged();
+    }
+
+    private List<WearableConfiguration> getConfigurations() {
         List<WearableConfiguration> configurationList = new ArrayList<>();
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_BACKGROUND));
         configurationList.add(new WearableConfiguration(R.drawable.ic_date_on, CONFIG_DATE, mDisplayDate));
@@ -158,44 +203,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_HAND_MINUTE));
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_HAND_SECOND));
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_HOUR_MARKER));
-
-        WearableConfigAdapter adapter = new WearableConfigAdapter(this, configurationList);
-        mListView.setAdapter(adapter);
-        mListView.setClickListener(new WearableListView.ClickListener() {
-            @Override
-            public void onClick(WearableListView.ViewHolder viewHolder) {
-                WearableListItemLayout layout = (WearableListItemLayout) viewHolder.itemView;
-
-                TextView nameTextView = (TextView) layout.findViewById(R.id.setting_text_view);
-                String action = nameTextView.getText().toString();
-                if (action.contains("Background") || action.contains("Hand") || action.contains("Marker")) {
-                    Intent intent = new Intent(WearableConfigurationActivity.this, ColorConfigActivity.class);
-                    intent.putExtra(ColorConfigActivity.CONFIG_HEADER, action);
-                    startActivityForResult(intent, REQUEST_COLOR);
-                } else if (CONFIG_DATE.equals(action)) {
-                    TextView settingTextView = (TextView) layout.findViewById(R.id.subsetting_text_view);
-                    CircledImageView circleImage = (CircledImageView) layout.findViewById(R.id.setting_circle);
-                    PutDataMapRequest putDataMapRequest = PutDataMapRequest.create(PATH);
-
-                    if (getString(R.string.label_setting_on).equals(settingTextView.getText().toString())) {
-                        settingTextView.setText(getString(R.string.label_setting_off));
-                        circleImage.setImageResource(R.drawable.ic_date_off);
-                        putDataMapRequest.getDataMap().putBoolean(action, false);
-                    } else {
-                        settingTextView.setText(getString(R.string.label_setting_on));
-                        circleImage.setImageResource(R.drawable.ic_date_on);
-                        putDataMapRequest.getDataMap().putBoolean(action, true);
-                    }
-                    PutDataRequest putDataRequest = putDataMapRequest.asPutDataRequest();
-                    Wearable.DataApi.putDataItem(mGoogleApiClient, putDataRequest);
-                }
-            }
-
-            @Override
-            public void onTopEmptyRegionClick() {
-
-            }
-        });
+        return configurationList;
     }
 
     @Override
