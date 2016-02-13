@@ -325,6 +325,7 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             } else if (mAmbient) {//TODO gray ambient BG for light mode
                 canvas.drawBitmap(mGrayBackgroundBitmap, 0, 0, mBackgroundPaint);
             } else {
+                canvas.drawColor(Color.BLACK);
                 canvas.drawBitmap(mBackgroundBitmap, 0, 0, mBackgroundPaint);
             }
 
