@@ -151,9 +151,9 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             mBackgroundPaint = new Paint();
             mBackgroundPaint.setColor(ContextCompat.getColor(GdgWatchFace.this, R.color.gdg_black));
 
-            mBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_black);
-            mDarkBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_black);
-            mLightBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_background);
+            mBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_new);
+            mDarkBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_new);
+            mLightBackgroundBitmap = BitmapFactory.decodeResource(resources, R.drawable.gdg_new);
 
             mHourHandPaint = new Paint();
             mHourHandPaint.setColor(ContextCompat.getColor(GdgWatchFace.this, R.color.gdg_gray));
