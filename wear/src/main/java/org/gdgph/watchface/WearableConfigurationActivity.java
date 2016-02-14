@@ -1,7 +1,7 @@
 package org.gdgph.watchface;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.app.Activity;
 import android.os.Bundle;
 import android.support.wearable.view.CircledImageView;
 import android.support.wearable.view.WearableListView;
@@ -15,8 +15,8 @@ import com.google.android.gms.wearable.DataApi;
 import com.google.android.gms.wearable.DataEvent;
 import com.google.android.gms.wearable.DataEventBuffer;
 import com.google.android.gms.wearable.DataItem;
-import com.google.android.gms.wearable.DataItemBuffer;
 import com.google.android.gms.wearable.DataMap;
+import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
 
 import java.util.ArrayList;
@@ -106,6 +106,8 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
                     @Override
                     public void onConnected(Bundle bundle) {
                         Log.d(TAG, "onConnected:" + bundle);
+                        Wearable.DataApi.addListener(mGoogleApiClient, WearableConfigurationActivity.this);
+                        updateConfigDataItemAndUi();
                     }
 
                     @Override
@@ -126,28 +128,26 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
     protected void onStart() {
         super.onStart();
         mGoogleApiClient.connect();
-        Wearable.DataApi.addListener(mGoogleApiClient, this);
-        Wearable.DataApi.getDataItems(mGoogleApiClient)
-                .setResultCallback(new ResultCallback<DataItemBuffer>() {
-                    @Override
-                    public void onResult(DataItemBuffer dataItems) {
-                        for (DataItem item : dataItems) {
-                            updateConfig(item);
-                        }
-
-                        dataItems.release();
-                    }
-                });
     }
 
-    private void updateConfig(DataItem item) {
-//        if (WearableConfigurationActivity.PATH_DATE.equals(item.getUri().getPath())) {
-//            DataMap dataMap = DataMapItem.fromDataItem(item).getDataMap();
-//            if (dataMap.containsKey(WearableConfigurationActivity.CONFIG_DATE)) {
-//                mDisplayDate = dataMap.getInt(WearableConfigurationActivity.CONFIG_DATE) == 1;
-//                updateConfigurations();
-//            }
-//        }
+    private void updateConfigDataItemAndUi() {
+        WearableConfigurationUtil.fetchConfigDataMap(mGoogleApiClient,
+                WearableConfigurationUtil.PATH_ANALOG,
+                new ResultCallback<DataApi.DataItemResult>() {
+                    @Override
+                    public void onResult(DataApi.DataItemResult dataItemResult) {
+                        if (dataItemResult.getStatus().isSuccess()) {
+                            if (dataItemResult.getDataItem() != null) {
+                                DataItem configDataItem = dataItemResult.getDataItem();
+                                DataMapItem dataMapItem = DataMapItem.fromDataItem(configDataItem);
+                                DataMap dataMap = dataMapItem.getDataMap();
+                                if (dataMap.containsKey(WearableConfigurationUtil.CONFIG_DATE)) {
+                                    mDisplayDate = dataMap.getInt(WearableConfigurationUtil.CONFIG_DATE) == 1;
+                                }
+                            }
+                        }
+                    }
+                });
     }
 
     @Override
@@ -178,7 +178,7 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
 
     private List<WearableConfiguration> getConfigurations() {
         List<WearableConfiguration> configurationList = new ArrayList<>();
-//        configurationList.add(new WearableConfiguration(R.drawable.ic_palette, CONFIG_BACKGROUND));
+//        configurationList.add(new WearableConfiguration(R.drawable.ic_palette, WearableConfigurationUtil.CONFIG_BACKGROUND));
         configurationList.add(new WearableConfiguration(R.drawable.ic_date_on, WearableConfigurationUtil.CONFIG_DATE, mDisplayDate));
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, WearableConfigurationUtil.CONFIG_HAND_HOUR));
         configurationList.add(new WearableConfiguration(R.drawable.ic_palette, WearableConfigurationUtil.CONFIG_HAND_MINUTE));
@@ -192,7 +192,11 @@ public class WearableConfigurationActivity extends Activity implements DataApi.D
         for (DataEvent dataEvent : dataEventBuffer) {
             if (dataEvent.getType() == DataEvent.TYPE_CHANGED) {
                 DataItem item = dataEvent.getDataItem();
-                updateConfig(item);
+                DataMapItem dataMapItem = DataMapItem.fromDataItem(item);
+                DataMap dataMap = dataMapItem.getDataMap();
+                if (dataMap.containsKey(WearableConfigurationUtil.CONFIG_DATE)) {
+                    mDisplayDate = dataMap.getInt(WearableConfigurationUtil.CONFIG_DATE) == 1;
+                }
             }
         }
 
