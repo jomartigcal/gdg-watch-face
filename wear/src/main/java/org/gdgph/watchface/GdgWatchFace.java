@@ -52,6 +52,9 @@ import com.google.android.gms.wearable.DataMap;
 import com.google.android.gms.wearable.DataMapItem;
 import com.google.android.gms.wearable.Wearable;
 
+import org.gdgph.watchface.R;
+import org.gdgph.watchface.WearableConfigurationUtil;
+
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
@@ -102,9 +105,11 @@ public class GdgWatchFace extends CanvasWatchFaceService {
         Bitmap mBackgroundBitmap;
         Bitmap mGrayBackgroundBitmap;
         int backgroundColor;
+        int timeSetting;
         boolean mAmbient;
         boolean mLightMode = false;
         boolean mDisplayDate = true;
+        boolean displayTime = true;
         Time mTime;
         final BroadcastReceiver mTimeZoneReceiver = new BroadcastReceiver() {
             @Override
@@ -316,8 +321,10 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                         mCenterY - textHeightOffset, getAdjustedPaintColor(mDateTimePaint));
             }
 
-            canvas.drawText(formatTwoDigitNumber(mTime.hour) + ":" + formatTwoDigitNumber(mTime.minute),
-                    mCenterX - mSecondHandLength, mCenterY - textHeightOffset, getAdjustedPaintColor(mDateTimePaint));
+            if(displayTime) {
+                canvas.drawText(formatHour(mTime.hour) + ":" + formatTwoDigitNumber(mTime.minute),
+                        mCenterX - mSecondHandLength, mCenterY - textHeightOffset, getAdjustedPaintColor(mDateTimePaint));
+            }
 
             /*
              * These calculations reflect the rotation in degrees per unit of
@@ -434,6 +441,16 @@ public class GdgWatchFace extends CanvasWatchFaceService {
             return paint;
         }
 
+        private String formatHour(int hour) {
+            int hourToDisplay = hour;
+            if(timeSetting == WearableConfigurationUtil.TIME_12_HOUR) {
+                hourToDisplay = (hour % WearableConfigurationUtil.TIME_12_HOUR) == 0 ?
+                        WearableConfigurationUtil.TIME_12_HOUR : hour%WearableConfigurationUtil.TIME_12_HOUR;
+            }
+
+            return String.format(Locale.getDefault(), "%02d", hourToDisplay);
+        }
+
         private String formatTwoDigitNumber(int number) {
             return String.format(Locale.getDefault(), "%02d", number);
         }
@@ -498,6 +515,9 @@ public class GdgWatchFace extends CanvasWatchFaceService {
                 updateHourMarker(color);
             } else if (dataMap.containsKey(WearableConfigurationUtil.CONFIG_DATE)) {
                 mDisplayDate = dataMap.getInt(WearableConfigurationUtil.CONFIG_DATE) == 1;
+            } else if (dataMap.containsKey(WearableConfigurationUtil.CONFIG_DIGITAL_TIME)) {
+                timeSetting = dataMap.getInt(WearableConfigurationUtil.CONFIG_DIGITAL_TIME);
+                displayTime =  timeSetting > 0;
             }
 
             invalidateIfNecessary();
