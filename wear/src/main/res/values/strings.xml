@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name">GDG Watch Face</string>
     <string name="label_configure">Customize</string>
     <string name="label_setting_on">ON</string>
     <string name="label_setting_off">OFF</string>
