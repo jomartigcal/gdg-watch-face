@@ -1,4 +1,11 @@
 GDG Watch Face
 
-1.0
+1.1
+    Adding changes from Frisbee
+    Using new GDG logo for the GDG watch face
+    Refactoring the fetching and updating of wearable configurations
+    Adding back background watch face config
+    Adding new watch face config  for 12/24 hour display (or hidden) and color for date/time
+
+1.0/1.0.1
     Initial version of the watch face
