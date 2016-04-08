@@ -37,6 +37,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.wearable.watchface.CanvasWatchFaceService;
 import android.support.wearable.watchface.WatchFaceStyle;
 import android.text.format.Time;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.SurfaceHolder;
 
